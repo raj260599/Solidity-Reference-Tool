@@ -23,6 +23,8 @@ You are here for the bugs that REQUIRE two or three of these lenses to see at on
 - Admin setter for a parameter that affects pending/in-flight value distribution.
 - Fee accrual that credits "current" recipients/holders, where the set of recipients can be changed by an unrestricted actor.
 - Hooks (rewards, callbacks) where the recipient is settable but past accruals don't checkpoint.
+- A single function (not two paired functions) that internally branches into structurally DIFFERENT pricing/composition formulas based on mutable state (empty vs non-empty pool/bin,first-depositor vs subsequent), where a caller's protection is a flat numeric cap
+(maxAmountIn/maxAmountOut) validated only against the expected branch. Check whether an actor can cheaply force the state that selects the OTHER branch between the caller's tx submission and execution (front-run: drain to empty, or inflate then reset) — a cap that bounds MAGNITUDE under one formula does not bound magnitude OR composition under a different formula that also happens to satisfy the same numeric cap.
 
 ## Discipline
 
