@@ -51,13 +51,14 @@ For each storage variable used across the contract:
    - Variable read but never written → defaults to zero silently
    - Multiple writers with different validation shapes → exploit the weakest
 
-## Step 5 — Admin-function variants
+## Step 5 — Function-variant guard parity (admin-vs-user AND sibling user-vs-user)
 
-For every admin function, check if it's a variant of a user-side function (`mint` ↔ `adminMint`, `swap` ↔ `forceSwap`, `pause/unpause` for any guarded op, `set*` for parameters that gate user behavior):
+For every admin function that's a variant of a user-side function, AND for every pair ofuser-facing functions that accomplish the same underlying action via different parameter shapes (exact-amount vs weighted/ratio vs percentage; single-hop vs multi-hop; immediate vs scheduled) — diff their guards:
 
 1. Diff against the user-side function for missing manipulation guards (slippage, deadline, manipulation locks), missing input validation, asymmetric state updates, missing emit.
 2. The Beefy pattern: `deposit` had `onlyCompPeriods`, but `setPositionWidth` and `unpause` mirrored the same liquidity-rebalancing flow without that guard → sandwich drains TVL on admin parameter change.
 3. Devs under-test admin functions. They view them as "trusted actor only" and skip layered defenses. For every admin parameter change that affects user-relevant state, ask: can a user sandwich the admin transaction?
+4. Sibling-parity check: when two co-equal, both-callable-by-anyone functions exist for the same action, and one has a state-freshness guard (cursor bounds, price bounds, deadline) that the other lacks, treat that as a real asymmetry finding even if the guard-less sibling has a DIFFERENT kind of protection (e.g., amount caps). Verify the different protection is actually equivalent — see trust-gap-agent Seam 2 for the check.
 
 ## Step 6 — Bad symmetry (defensive checks that should not exist)
 
