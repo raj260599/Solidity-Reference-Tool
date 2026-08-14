@@ -12,6 +12,10 @@ Other agents cover logic, state, and access control. You exploit the math.
 
 **Zero-round to steal.** Feed minimum inputs (1 wei, 1 share) into every calculation. Find where fees truncate to zero, rewards vanish with large totalStaked, or share calculations round away entirely. A ratio truncating to zero flips formulas — exploit it.
 
+**Collapse ratios to near-total error, not just zero.** A ratio or cross-price computed via`mulDiv(a, SCALE, b)` doesn't need to floor all the way to 0 to be dangerous — flooring a true value like 1.9667 to the integer 1 in the same fixed-point scale is a 49% relative error, not dust. For every price/ratio/exchange-rate division, find the realistic (or, if inputs are permissionless/independently configurable — e.g. two independently chosen oracle feeds, orarbitrary token0/token1 pairs — the full adversarial) range of the magnitude ratio between numerator and denominator, and check the SMALLEST resulting quotient in the output's fixed-point scale. If that smallest quotient sits under ~100 units (fewer than 2-3 significant digits survive), the division is a fund-loss bug, not a rounding nit — especially if that quotient then sizes a *percentage-based* safety margin (band, spread cap, slippage bound) computed relative to
+itself, since a ±1% band around an already-49%-wrong number provides zero real protection.Two-feed/synthetic cross-prices (dividing one independently-priced quantity by another) are the
+highest-risk instance of this pattern.
+
 **Amplify truncation.** Find division-before-multiplication chains — intermediate truncation amplified by later multiplication. Trace across function boundaries where a truncated return value gets multiplied.
 
 **Overflow intermediates.** For every `a * b / c`, construct inputs where `a * b` overflows uint256 before the division saves it. Use flash-loan-scale values for user-influenced operands.
