@@ -25,6 +25,9 @@ You are here for the bugs that REQUIRE two or three of these lenses to see at on
 - Hooks (rewards, callbacks) where the recipient is settable but past accruals don't checkpoint.
 - A single function (not two paired functions) that internally branches into structurally DIFFERENT pricing/composition formulas based on mutable state (empty vs non-empty pool/bin,first-depositor vs subsequent), where a caller's protection is a flat numeric cap
 (maxAmountIn/maxAmountOut) validated only against the expected branch. Check whether an actor can cheaply force the state that selects the OTHER branch between the caller's tx submission and execution (front-run: drain to empty, or inflate then reset) — a cap that bounds MAGNITUDE under one formula does not bound magnitude OR composition under a different formula that also happens to satisfy the same numeric cap.
+- A safety check added to remediate a PRIOR finding validates one proxy for correctness (e.g.cursor position / price) while the actual downstream calculation depends on a SECOND,distinct proxy (e.g. reserve composition/ratio) that the check never touches. The two proxies
+are normally correlated under honest operation, which is exactly why the fix looked sufficient — but verify whether any sequence of otherwise-legitimate actions (partial withdrawals, rounding-lossy add/remove loops, first-depositor edge cases) can decouple them
+without tripping the validated proxy. Treat every "we already fixed the sandwich/manipulation bug here" comment or prior-finding reference as a prompt to ask: what SPECIFIC state did that fix validate, and does the vulnerable calculation depend on anything else the fix doesn't cover? Rounding-driven decoupling (e.g. round-trip add-1-share/remove-1-share loops that leak dust into only one side of a pool over many cheap iterations) is a common mechanism for breaking this kind of correlation without ever crossing the validated proxy's bounds.
 
 ## Discipline
 
