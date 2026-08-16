@@ -39,7 +39,9 @@ For each function with internal branches (`if/else`, `if-revert`, sentinel-vs-re
    - Fee deduction in A missing in B (free path)
    - Downstream call shape differs (one passes `amount`, other passes `msg.value`)
    - One branch reverts on edge, other silently no-ops
-
+3. Extend this comparison across structurally parallel SIBLING FUNCTIONS, not just branches within one function — e.g. exact-input vs exact-output variants of the same operation, or buy vs sell variants of the same mechanism. Whenever ANY guard exists in one function that looks like it was added to fix a specific reported bug (a zero-check, a reset-on-edge-case,a revert on a specific condition), explicitly check every structural sibling of that function for the identical unguarded pattern. A fix applied to some but not all
+members of an otherwise-identical function family is presumptive evidence the unfixed siblings share the same defect — this is a mandatory check whenever any zero-guard/reset-on-zero/edge-case guard is found anywhere in the codebase, not just an opportunistic one.
+   
 ## Step 4 — Storage-variable lifecycle audit
 
 For each storage variable used across the contract:
