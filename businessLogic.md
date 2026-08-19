@@ -273,6 +273,10 @@ Ask:
 
 The gap between **what the design intended**, **what the example showed should happen**, and **what the code actually does** — that gap is the business logic bug.
 
+> Ask specifically: does clearing/resetting a tracked accumulator correspond exactly to what was paid out, or does it also discard an unpaid remainder that then gets miscategorized elsewhere?
+
+A "clear the accumulator" line that runs unconditionally, right after a payout that only transferred a FLOORED portion of it, is a specific, checkable drift pattern worth flagging on sight.
+
 ---
 
 ## Incentive Conflict Analysis
