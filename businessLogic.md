@@ -206,8 +206,10 @@ Ask:
 Check:
 
 > Can old state influence new users?
-
 ---
+
+- Watch specifically for a "reset without carry" pattern: a dedicated accumulator (X) is deliberately excluded from a broader, differently-split pool (Y) — confirm this separation is itself intentional and correct. Then check what happens to X's fractional/undistributed remainder when X is paid out: if the payout floors to whole units but the accumulator is reset to ZERO regardless of what was actually transferred, the floored remainder doesn't disappear — it silently re-enters Y on the next read and gets redistributed under Y's DIFFERENT split rule. This is a value-ATTRIBUTION bug, not a value-loss bug (verify total payout is conserved across both categories — it usually is). It becomes concretely exploitable, including as pure zero-profit griefing, whenever: (a) the payout/reset function is callable by ANYONE, (b) X and Y have different recipient split ratios, and (c) an outside party can read on-chain state to choose WHEN to trigger the reset in a way that's systematically adverse to one recipient. Check every accumulator-vs-generic-pool separation in the codebase for this exact reset-without-carry gap, especially in fee/reward-splitting logic with more than one category and more than one recipient.
+
 
 ## Step 8 — Time-Skipped Lifecycle
 
